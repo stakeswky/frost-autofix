@@ -5,23 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>frost-autofix — AI Bug Fixer for GitHub</title>
   <style>
-    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --green: #3fb950; --red: #f85149; }
+    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --yellow: #d29922; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
     .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
-    header { text-align: center; margin-bottom: 3rem; }
-    header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    header h1 span { color: var(--accent); }
-    header p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+
+    /* Nav */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    nav .logo { font-size: 1.3rem; font-weight: 700; }
+    nav .logo span { color: var(--accent); }
+    nav .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    nav .nav-links a { color: var(--muted); font-size: 0.9rem; cursor: pointer; }
+    nav .nav-links a:hover, nav .nav-links a.active { color: var(--text); text-decoration: none; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; vertical-align: middle; }
+    .user-menu { display: flex; align-items: center; gap: 0.5rem; }
+    .btn { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); font-size: 0.8rem; padding: 0.35rem 0.75rem; }
+
+    /* Stats */
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; }
     .stat-card .value { font-size: 2.5rem; font-weight: 700; color: var(--accent); }
     .stat-card .label { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
-    .cta { text-align: center; margin: 2.5rem 0; }
-    .cta a { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 0.75rem 2rem; border-radius: 6px; font-size: 1.1rem; font-weight: 600; transition: opacity 0.2s; }
-    .cta a:hover { opacity: 0.85; }
+
+    /* Sections */
     .section-title { font-size: 1.3rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .cta { text-align: center; margin: 2.5rem 0; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem; }
     th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
     th { color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
     td { font-size: 0.9rem; }
@@ -29,10 +46,15 @@
     .badge-success { background: rgba(63,185,80,0.15); color: var(--green); }
     .badge-failed { background: rgba(248,81,73,0.15); color: var(--red); }
     .badge-queued { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .badge-processing { background: rgba(210,153,34,0.15); color: var(--yellow); }
+
+    /* How it works */
     .how-it-works { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .step { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
     .step .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
     .step p { color: var(--muted); margin-top: 0.5rem; font-size: 0.9rem; }
+
+    /* Pricing */
     .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .plan { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
     .plan.featured { border-color: var(--accent); }
@@ -42,74 +64,205 @@
     .plan ul { list-style: none; margin-top: 1rem; }
     .plan ul li { padding: 0.3rem 0; color: var(--muted); font-size: 0.9rem; }
     .plan ul li::before { content: "✓ "; color: var(--green); }
+
+    /* Usage bar */
+    .usage-bar-wrap { background: var(--border); border-radius: 4px; height: 8px; margin-top: 0.5rem; overflow: hidden; }
+    .usage-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+    .usage-bar.ok { background: var(--green); }
+    .usage-bar.warn { background: var(--yellow); }
+    .usage-bar.full { background: var(--red); }
+    .usage-text { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* Installation cards */
+    .install-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+    .install-card .install-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .install-card .account { font-weight: 600; font-size: 1.05rem; }
+    .install-card .plan-badge { font-size: 0.75rem; padding: 2px 10px; border-radius: 12px; text-transform: uppercase; font-weight: 700; }
+    .plan-free { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .plan-pro { background: rgba(63,185,80,0.15); color: var(--green); }
+
+    /* Page views */
+    .page { display: none; }
+    .page.active { display: block; }
+
     footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); }
-    #loading { color: var(--muted); text-align: center; padding: 2rem; }
+    .empty { text-align: center; color: var(--muted); padding: 2rem; }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>🧊 <span>frost-autofix</span></h1>
-      <p>AI-powered bug fixer for GitHub. Install the app, and we'll automatically analyze new issues and submit fix PRs.</p>
-    </header>
-
-    <div class="stats">
-      <div class="stat-card"><div class="value" id="s-installs">—</div><div class="label">Installations</div></div>
-      <div class="stat-card"><div class="value" id="s-runs">—</div><div class="label">Fix Attempts</div></div>
-      <div class="stat-card"><div class="value" id="s-prs">—</div><div class="label">PRs Created</div></div>
-      <div class="stat-card"><div class="value" id="s-rate">—</div><div class="label">Success Rate</div></div>
-    </div>
-
-    <div class="cta">
-      <a href="https://github.com/apps/frost-autofix" target="_blank">Install on GitHub →</a>
-    </div>
-
-    <h2 class="section-title">How it works</h2>
-    <div class="how-it-works">
-      <div class="step"><div class="num">1</div><p>Install the GitHub App on your repo</p></div>
-      <div class="step"><div class="num">2</div><p>A new bug issue is opened (or someone comments <code>/fix</code>)</p></div>
-      <div class="step"><div class="num">3</div><p>AI analyzes the issue, locates the bug in code</p></div>
-      <div class="step"><div class="num">4</div><p>A minimal fix PR is automatically submitted</p></div>
-    </div>
-
-    <h2 class="section-title">Pricing</h2>
-    <div class="pricing">
-      <div class="plan">
-        <h3>Free</h3>
-        <div class="price">$0 <span>/month</span></div>
-        <ul>
-          <li>5 auto-fix PRs per month</li>
-          <li>Public repos only</li>
-          <li>Community support</li>
-        </ul>
+    <!-- Navigation -->
+    <nav>
+      <div class="logo">🧊 <span>frost-autofix</span></div>
+      <div class="nav-links">
+        <a onclick="showPage('home')" id="nav-home">Home</a>
+        <a onclick="showPage('dashboard')" id="nav-dashboard" style="display:none">Dashboard</a>
+        <div id="auth-area"></div>
       </div>
-      <div class="plan featured">
-        <h3>Pro</h3>
-        <div class="price">$29 <span>/month</span></div>
-        <ul>
-          <li>Unlimited auto-fix PRs</li>
-          <li>Public + private repos</li>
-          <li>Priority processing</li>
-          <li>Slack/Discord notifications</li>
-        </ul>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <div class="page active" id="page-home">
+      <header style="text-align:center;margin-bottom:3rem">
+        <h1 style="font-size:2.5rem;margin-bottom:0.5rem">🧊 <span style="color:var(--accent)">frost-autofix</span></h1>
+        <p style="color:var(--muted);font-size:1.1rem;max-width:600px;margin:0 auto">AI-powered bug fixer for GitHub. Install the app, and we'll automatically analyze new issues and submit fix PRs.</p>
+      </header>
+
+      <div class="stats">
+        <div class="stat-card"><div class="value" id="s-installs">—</div><div class="label">Installations</div></div>
+        <div class="stat-card"><div class="value" id="s-runs">—</div><div class="label">Fix Attempts</div></div>
+        <div class="stat-card"><div class="value" id="s-prs">—</div><div class="label">PRs Created</div></div>
+        <div class="stat-card"><div class="value" id="s-rate">—</div><div class="label">Success Rate</div></div>
       </div>
+
+      <div class="cta">
+        <a href="https://github.com/apps/frost-autofix" target="_blank" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1.1rem">Install on GitHub →</a>
+      </div>
+
+      <h2 class="section-title">How it works</h2>
+      <div class="how-it-works">
+        <div class="step"><div class="num">1</div><p>Install the GitHub App on your repo</p></div>
+        <div class="step"><div class="num">2</div><p>A new bug issue is opened (or someone comments <code>/fix</code>)</p></div>
+        <div class="step"><div class="num">3</div><p>AI analyzes the issue, locates the bug in code</p></div>
+        <div class="step"><div class="num">4</div><p>A minimal fix PR is automatically submitted</p></div>
+      </div>
+
+      <h2 class="section-title">Pricing</h2>
+      <div class="pricing">
+        <div class="plan">
+          <h3>Free</h3>
+          <div class="price">$0 <span>/month</span></div>
+          <ul>
+            <li>5 fix PRs per month</li>
+            <li>Public repos only</li>
+            <li>Community support</li>
+          </ul>
+        </div>
+        <div class="plan featured">
+          <h3>Pro</h3>
+          <div class="price">$29 <span>/month</span></div>
+          <ul>
+            <li>Unlimited fix PRs</li>
+            <li>Public + private repos</li>
+            <li>Priority queue</li>
+            <li>Email support</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="section-title">Recent Activity</h2>
+      <div id="activity" style="display:none">
+        <table>
+          <thead><tr><th>Repo</th><th>Issue</th><th>PR</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="activity-body"></tbody>
+        </table>
+      </div>
+      <div id="loading" class="empty">Loading stats...</div>
     </div>
 
-    <h2 class="section-title">Recent Activity</h2>
-    <div id="loading">Loading...</div>
-    <table id="activity" style="display:none">
-      <thead><tr><th>Repo</th><th>Issue</th><th>PR</th><th>Status</th><th>Time</th></tr></thead>
-      <tbody id="activity-body"></tbody>
-    </table>
+    <!-- DASHBOARD PAGE (authenticated) -->
+    <div class="page" id="page-dashboard">
+      <h2 class="section-title">Your Installations</h2>
+      <div id="dash-installations"><div class="empty">Loading...</div></div>
+
+      <h2 class="section-title" style="margin-top:2rem">Your Fix History</h2>
+      <div id="dash-runs"><div class="empty">Loading...</div></div>
+
+      <h2 class="section-title" style="margin-top:2rem">Monthly Usage</h2>
+      <div id="dash-usage"><div class="empty">Loading...</div></div>
+    </div>
 
     <footer>
-      <p>frost-autofix · Built by <a href="https://github.com/stakeswky" style="color:var(--accent);text-decoration:none">stakeswky</a></p>
+      <p>frost-autofix · Built by <a href="https://github.com/stakeswky">stakeswky</a></p>
     </footer>
   </div>
 
   <script>
     const API = "https://frost-autofix.stawky.workers.dev";
-    async function load() {
+    let currentUser = null;
+
+    // ─── Auth ───
+
+    async function checkAuth() {
+      try {
+        // Try token from URL hash (for cross-domain cookie workaround)
+        const hash = window.location.hash;
+        const tokenMatch = hash.match(/token=([^&]+)/);
+        if (tokenMatch) {
+          localStorage.setItem("frost_token", tokenMatch[1]);
+          window.location.hash = hash.replace(/token=[^&]+&?/, "").replace(/^#\/?$/, "");
+        }
+
+        const token = localStorage.getItem("frost_token");
+        if (!token) return updateAuthUI(null);
+
+        const res = await fetch(`${API}/api/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          localStorage.removeItem("frost_token");
+          return updateAuthUI(null);
+        }
+        currentUser = await res.json();
+        updateAuthUI(currentUser);
+
+        // Auto-navigate to dashboard if hash says so
+        if (window.location.hash.includes("dashboard")) {
+          showPage("dashboard");
+        }
+      } catch (e) {
+        updateAuthUI(null);
+      }
+    }
+
+    function updateAuthUI(user) {
+      const area = document.getElementById("auth-area");
+      const dashNav = document.getElementById("nav-dashboard");
+      if (user) {
+        dashNav.style.display = "";
+        area.innerHTML = `
+          <span class="user-menu">
+            <img src="${user.avatar}" class="avatar" alt="${user.login}">
+            <span style="font-size:0.9rem">${user.login}</span>
+            <button class="btn-danger" onclick="logout()">Logout</button>
+          </span>`;
+      } else {
+        dashNav.style.display = "none";
+        area.innerHTML = `<a href="${API}/auth/login" class="btn btn-outline" style="font-size:0.85rem">Sign in with GitHub</a>`;
+      }
+    }
+
+    async function logout() {
+      const token = localStorage.getItem("frost_token");
+      if (token) {
+        fetch(`${API}/auth/logout`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {});
+      }
+      localStorage.removeItem("frost_token");
+      currentUser = null;
+      updateAuthUI(null);
+      showPage("home");
+    }
+
+    // ─── Pages ───
+
+    function showPage(name) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".nav-links a").forEach(a => a.classList.remove("active"));
+      const page = document.getElementById(`page-${name}`);
+      const nav = document.getElementById(`nav-${name}`);
+      if (page) page.classList.add("active");
+      if (nav) nav.classList.add("active");
+
+      if (name === "dashboard" && currentUser) loadDashboard();
+      if (name === "home") loadPublicStats();
+    }
+
+    // ─── Public stats ───
+
+    async function loadPublicStats() {
       try {
         const res = await fetch(`${API}/api/stats`);
         const d = await res.json();
@@ -119,15 +272,16 @@
         document.getElementById("s-rate").textContent = d.success_rate + "%";
 
         const tbody = document.getElementById("activity-body");
-        if (d.recent && d.recent.length) {
+        tbody.innerHTML = "";
+        if (d.recent?.length) {
           d.recent.forEach(r => {
             const tr = document.createElement("tr");
-            const statusClass = r.status === "success" ? "badge-success" : r.status === "failed" ? "badge-failed" : "badge-queued";
+            const cls = r.status === "success" ? "badge-success" : r.status === "failed" ? "badge-failed" : r.status === "processing" ? "badge-processing" : "badge-queued";
             tr.innerHTML = `
-              <td><a href="https://github.com/${r.repo}" style="color:var(--accent);text-decoration:none">${r.repo}</a></td>
+              <td><a href="https://github.com/${r.repo}">${r.repo}</a></td>
               <td>#${r.issue_number}</td>
-              <td>${r.pr_number ? `<a href="https://github.com/${r.repo}/pull/${r.pr_number}" style="color:var(--green);text-decoration:none">#${r.pr_number}</a>` : "—"}</td>
-              <td><span class="badge ${statusClass}">${r.status}</span></td>
+              <td>${r.pr_number ? `<a href="https://github.com/${r.repo}/pull/${r.pr_number}" style="color:var(--green)">#${r.pr_number}</a>` : "—"}</td>
+              <td><span class="badge ${cls}">${r.status}</span></td>
               <td>${new Date(r.created_at).toLocaleDateString()}</td>`;
             tbody.appendChild(tr);
           });
@@ -138,7 +292,90 @@
         document.getElementById("loading").textContent = "Could not load stats";
       }
     }
-    load();
+
+    // ─── Dashboard ───
+
+    async function loadDashboard() {
+      const token = localStorage.getItem("frost_token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Load installations
+      try {
+        const res = await fetch(`${API}/api/my/installations`, { headers });
+        const data = await res.json();
+        const el = document.getElementById("dash-installations");
+        if (!data.installations?.length) {
+          el.innerHTML = `<div class="empty">No installations found. <a href="https://github.com/apps/frost-autofix" target="_blank">Install the app →</a></div>`;
+        } else {
+          el.innerHTML = data.installations.map(inst => {
+            const pct = inst.pr_limit > 0 ? Math.min(100, Math.round((inst.current_month_prs / inst.pr_limit) * 100)) : 0;
+            const barClass = pct >= 100 ? "full" : pct >= 80 ? "warn" : "ok";
+            return `
+              <div class="install-card">
+                <div class="install-header">
+                  <span class="account">${inst.account_login}</span>
+                  <span class="plan-badge plan-${inst.plan}">${inst.plan}</span>
+                </div>
+                <div class="usage-text">${inst.current_month_prs} / ${inst.pr_limit === -1 ? "∞" : inst.pr_limit} PRs this month</div>
+                ${inst.pr_limit > 0 ? `
+                  <div class="usage-bar-wrap"><div class="usage-bar ${barClass}" style="width:${pct}%"></div></div>
+                ` : ""}
+              </div>`;
+          }).join("");
+        }
+      } catch (e) {
+        document.getElementById("dash-installations").innerHTML = `<div class="empty">Failed to load installations</div>`;
+      }
+
+      // Load runs
+      try {
+        const res = await fetch(`${API}/api/my/runs`, { headers });
+        const data = await res.json();
+        const el = document.getElementById("dash-runs");
+        if (!data.runs?.length) {
+          el.innerHTML = `<div class="empty">No fix runs yet</div>`;
+        } else {
+          let html = `<table><thead><tr><th>Repo</th><th>Issue</th><th>PR</th><th>Status</th><th>Date</th></tr></thead><tbody>`;
+          data.runs.forEach(r => {
+            const cls = r.status === "success" ? "badge-success" : r.status === "failed" ? "badge-failed" : r.status === "processing" ? "badge-processing" : "badge-queued";
+            html += `<tr>
+              <td><a href="https://github.com/${r.repo}">${r.repo}</a></td>
+              <td><a href="https://github.com/${r.repo}/issues/${r.issue_number}">#${r.issue_number}</a></td>
+              <td>${r.pr_number ? `<a href="https://github.com/${r.repo}/pull/${r.pr_number}" style="color:var(--green)">#${r.pr_number}</a>` : "—"}</td>
+              <td><span class="badge ${cls}">${r.status}</span></td>
+              <td>${new Date(r.created_at).toLocaleDateString()}</td>
+            </tr>`;
+          });
+          html += `</tbody></table>`;
+          el.innerHTML = html;
+        }
+      } catch (e) {
+        document.getElementById("dash-runs").innerHTML = `<div class="empty">Failed to load runs</div>`;
+      }
+
+      // Load usage history
+      try {
+        const res = await fetch(`${API}/api/my/usage`, { headers });
+        const data = await res.json();
+        const el = document.getElementById("dash-usage");
+        if (!data.usage?.length) {
+          el.innerHTML = `<div class="empty">No usage data yet</div>`;
+        } else {
+          let html = `<table><thead><tr><th>Account</th><th>Month</th><th>PRs</th></tr></thead><tbody>`;
+          data.usage.forEach(u => {
+            html += `<tr><td>${u.account_login}</td><td>${u.month}</td><td>${u.pr_count}</td></tr>`;
+          });
+          html += `</tbody></table>`;
+          el.innerHTML = html;
+        }
+      } catch (e) {
+        document.getElementById("dash-usage").innerHTML = `<div class="empty">Failed to load usage</div>`;
+      }
+    }
+
+    // ─── Init ───
+    checkAuth();
+    loadPublicStats();
   </script>
 </body>
 </html>

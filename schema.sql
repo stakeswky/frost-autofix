@@ -36,7 +36,27 @@ CREATE TABLE IF NOT EXISTS usage_monthly (
   FOREIGN KEY (installation_id) REFERENCES installations(github_installation_id)
 );
 
+-- 用户会话 (GitHub OAuth)
+CREATE TABLE IF NOT EXISTS sessions (
+  token TEXT PRIMARY KEY,
+  github_user_id INTEGER NOT NULL,
+  github_login TEXT NOT NULL,
+  github_avatar TEXT,
+  access_token TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  expires_at TEXT NOT NULL
+);
+
+-- 用户 ↔ 安装关联 (一个用户可能有多个安装)
+CREATE TABLE IF NOT EXISTS user_installations (
+  github_user_id INTEGER NOT NULL,
+  installation_id INTEGER NOT NULL,
+  PRIMARY KEY (github_user_id, installation_id)
+);
+
 -- 索引
 CREATE INDEX IF NOT EXISTS idx_fix_runs_repo ON fix_runs(repo, created_at);
 CREATE INDEX IF NOT EXISTS idx_fix_runs_installation ON fix_runs(installation_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_usage_monthly_lookup ON usage_monthly(installation_id, month);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_user_installations_user ON user_installations(github_user_id);
