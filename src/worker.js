@@ -331,27 +331,27 @@ async function verifySignature(body, signature, secret) {
 // ─── Dashboard HTML (inline, same-origin) ───
 
 const DASHBOARD_HTML = `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>frost-autofix — AI Bug Fixer for GitHub</title>
+<title>frost-autofix</title>
 <style>
 :root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 .container{max-width:960px;margin:0 auto;padding:2rem 1rem}
-nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;margin-bottom:2rem;border-bottom:1px solid var(--border)}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;margin-bottom:2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.5rem}
 nav .logo{font-size:1.3rem;font-weight:700}nav .logo span{color:var(--accent)}
-.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
 .nav-links a{color:var(--muted);font-size:.9rem;cursor:pointer}.nav-links a:hover,.nav-links a.active{color:var(--text);text-decoration:none}
+.lang-sw{font-size:.75rem;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer}.lang-sw:hover{color:var(--text)}
 .avatar{width:28px;height:28px;border-radius:50%;vertical-align:middle}
 .user-menu{display:flex;align-items:center;gap:.5rem}
 .btn{display:inline-block;padding:.5rem 1.25rem;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:opacity .2s}
-.btn:hover{opacity:.85}.btn-primary{background:var(--accent);color:#fff}
-.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-.btn-sm{font-size:.8rem;padding:.35rem .75rem}
+.btn:hover{opacity:.85}.btn-primary{background:var(--accent);color:#fff}.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}.btn-sm{font-size:.8rem;padding:.35rem .75rem}
 .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);font-size:.8rem;padding:.35rem .75rem}
+.btn-installed{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);cursor:default;display:inline-block;padding:.5rem 1.25rem;border-radius:6px;font-size:.9rem;font-weight:600}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;text-align:center}
 .stat-card .value{font-size:2.5rem;font-weight:700;color:var(--accent)}.stat-card .label{color:var(--muted);font-size:.9rem;margin-top:.25rem}
@@ -361,16 +361,12 @@ table{width:100%;border-collapse:collapse;background:var(--card);border:1px soli
 th,td{padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
 th{color:var(--muted);font-weight:600;font-size:.85rem;text-transform:uppercase}td{font-size:.9rem}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600}
-.badge-success{background:rgba(63,185,80,.15);color:var(--green)}
-.badge-failed{background:rgba(248,81,73,.15);color:var(--red)}
-.badge-queued{background:rgba(88,166,255,.15);color:var(--accent)}
-.badge-processing{background:rgba(210,153,34,.15);color:var(--yellow)}
+.badge-success{background:rgba(63,185,80,.15);color:var(--green)}.badge-failed{background:rgba(248,81,73,.15);color:var(--red)}.badge-queued{background:rgba(88,166,255,.15);color:var(--accent)}.badge-processing{background:rgba(210,153,34,.15);color:var(--yellow)}
 .how-it-works{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
 .step{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.25rem}
 .step .num{font-size:1.5rem;font-weight:700;color:var(--accent)}.step p{color:var(--muted);margin-top:.5rem;font-size:.9rem}
 .pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:2rem}
-.plan{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem}
-.plan.featured{border-color:var(--accent)}.plan h3{font-size:1.2rem;margin-bottom:.5rem}
+.plan{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem}.plan.featured{border-color:var(--accent)}.plan h3{font-size:1.2rem;margin-bottom:.5rem}
 .plan .price{font-size:2rem;font-weight:700;color:var(--accent)}.plan .price span{font-size:.9rem;color:var(--muted);font-weight:400}
 .plan ul{list-style:none;margin-top:1rem}.plan ul li{padding:.3rem 0;color:var(--muted);font-size:.9rem}.plan ul li::before{content:"\\2713 ";color:var(--green)}
 .usage-bar-wrap{background:var(--border);border-radius:4px;height:8px;margin-top:.5rem;overflow:hidden}
@@ -389,171 +385,282 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:3rem;padd
 <body>
 <div class="container">
   <nav>
-    <div class="logo">\\u{1F9CA} <span>frost-autofix</span></div>
+    <div class="logo">&#x1F9CA; <span>frost-autofix</span></div>
     <div class="nav-links">
-      <a id="nav-home" class="active" onclick="showPage('home')">Home</a>
-      <a id="nav-dashboard" style="display:none" onclick="showPage('dashboard')">Dashboard</a>
+      <a id="nav-home" class="active" onclick="showPage('home')"></a>
+      <a id="nav-dashboard" style="display:none" onclick="showPage('dashboard')"></a>
+      <button class="lang-sw" onclick="toggleLang()" id="lang-btn">EN</button>
       <span id="auth-area"></span>
     </div>
   </nav>
 
-  <!-- HOME -->
   <div id="page-home" class="page active">
     <header style="text-align:center;margin-bottom:3rem">
-      <h1 style="font-size:2.5rem;margin-bottom:.5rem">\\u{1F9CA} <span style="color:var(--accent)">frost-autofix</span></h1>
-      <p style="color:var(--muted);font-size:1.1rem;max-width:600px;margin:0 auto">AI-powered bug fixer for GitHub. Install the app, and we'll automatically analyze new issues and submit fix PRs.</p>
+      <h1 style="font-size:2.5rem;margin-bottom:.5rem">&#x1F9CA; <span style="color:var(--accent)">frost-autofix</span></h1>
+      <p id="hero-desc" style="color:var(--muted);font-size:1.1rem;max-width:600px;margin:0 auto"></p>
     </header>
     <div class="stats">
-      <div class="stat-card"><div class="value" id="s-installs">—</div><div class="label">Installations</div></div>
-      <div class="stat-card"><div class="value" id="s-runs">—</div><div class="label">Fix Attempts</div></div>
-      <div class="stat-card"><div class="value" id="s-prs">—</div><div class="label">PRs Created</div></div>
-      <div class="stat-card"><div class="value" id="s-rate">—</div><div class="label">Success Rate</div></div>
+      <div class="stat-card"><div class="value" id="s-installs">&mdash;</div><div class="label" id="lbl-installs"></div></div>
+      <div class="stat-card"><div class="value" id="s-runs">&mdash;</div><div class="label" id="lbl-runs"></div></div>
+      <div class="stat-card"><div class="value" id="s-prs">&mdash;</div><div class="label" id="lbl-prs"></div></div>
+      <div class="stat-card"><div class="value" id="s-rate">&mdash;</div><div class="label" id="lbl-rate"></div></div>
     </div>
-    <div class="cta"><a href="https://github.com/apps/frost-autofix" target="_blank" class="btn btn-primary">Install on GitHub \\u2192</a></div>
-    <h2 class="section-title">How it works</h2>
+    <div class="cta" id="cta-area"></div>
+    <h2 class="section-title" id="how-title"></h2>
     <div class="how-it-works">
-      <div class="step"><div class="num">1</div><p>Install the GitHub App on your repo</p></div>
-      <div class="step"><div class="num">2</div><p>A new bug issue is opened (or comment <code>/fix</code>)</p></div>
-      <div class="step"><div class="num">3</div><p>AI analyzes the issue, locates the bug</p></div>
-      <div class="step"><div class="num">4</div><p>A minimal fix PR is automatically submitted</p></div>
+      <div class="step"><div class="num">1</div><p id="step1"></p></div>
+      <div class="step"><div class="num">2</div><p id="step2"></p></div>
+      <div class="step"><div class="num">3</div><p id="step3"></p></div>
+      <div class="step"><div class="num">4</div><p id="step4"></p></div>
     </div>
-    <h2 class="section-title">Pricing</h2>
+    <h2 class="section-title" id="pricing-title"></h2>
     <div class="pricing">
-      <div class="plan"><h3>Free</h3><div class="price">$0 <span>/month</span></div><ul><li>5 fix PRs per month</li><li>Public repos</li><li>Community support</li></ul></div>
-      <div class="plan featured"><h3>Pro</h3><div class="price">$29 <span>/month</span></div><ul><li>Unlimited fix PRs</li><li>Public + private repos</li><li>Priority processing</li><li>Email support</li></ul></div>
+      <div class="plan"><h3>Free</h3><div class="price">$0 <span>/mo</span></div><ul><li id="free1"></li><li id="free2"></li><li id="free3"></li></ul></div>
+      <div class="plan featured"><h3>Pro</h3><div class="price">$29 <span>/mo</span></div><ul><li id="pro1"></li><li id="pro2"></li><li id="pro3"></li><li id="pro4"></li></ul></div>
     </div>
     <div id="activity" style="display:none">
-      <h2 class="section-title">Recent Activity</h2>
-      <table><thead><tr><th>Repo</th><th>Issue</th><th>PR</th><th>Status</th><th>Date</th></tr></thead><tbody id="activity-body"></tbody></table>
+      <h2 class="section-title" id="recent-title"></h2>
+      <table><thead><tr><th id="th-repo"></th><th>Issue</th><th>PR</th><th id="th-status"></th><th id="th-date"></th></tr></thead><tbody id="activity-body"></tbody></table>
     </div>
-    <div id="loading" style="color:var(--muted);text-align:center;padding:2rem">Loading stats...</div>
+    <div id="loading" style="color:var(--muted);text-align:center;padding:2rem"></div>
   </div>
 
-  <!-- DASHBOARD -->
   <div id="page-dashboard" class="page">
-    <h2 class="section-title">Your Installations</h2>
-    <div id="dash-installations"><div class="empty">Loading...</div></div>
-    <h2 class="section-title">Fix History</h2>
-    <div id="dash-runs"><div class="empty">Loading...</div></div>
-    <h2 class="section-title">Monthly Usage</h2>
-    <div id="dash-usage"><div class="empty">Loading...</div></div>
+    <h2 class="section-title" id="dash-title-installs"></h2>
+    <div id="dash-installations"><div class="empty" id="dash-inst-loading"></div></div>
+    <h2 class="section-title" id="dash-title-history"></h2>
+    <div id="dash-runs"><div class="empty" id="dash-runs-loading"></div></div>
+    <h2 class="section-title" id="dash-title-usage"></h2>
+    <div id="dash-usage"><div class="empty" id="dash-usage-loading"></div></div>
   </div>
 
-  <footer><p>frost-autofix · Built by <a href="https://github.com/stakeswky">stakeswky</a></p></footer>
+  <footer><p>frost-autofix &middot; Built by <a href="https://github.com/stakeswky">stakeswky</a></p></footer>
 </div>
-
 <script>
-let currentUser = null;
+var L = localStorage.getItem('frost-lang') || (navigator.language.startsWith('zh') ? 'zh' : 'en');
+var currentUser = null;
+var userInstalled = false;
 
-async function checkAuth() {
-  try {
-    const res = await fetch("/api/me");
-    if (!res.ok) return updateAuthUI(null);
-    currentUser = await res.json();
-    updateAuthUI(currentUser);
-    if (location.hash.includes("dashboard")) showPage("dashboard");
-  } catch(e) { updateAuthUI(null); }
+var I18N = {
+  zh: {
+    nav_home:'首页', nav_dash:'控制台',
+    hero:'AI 驱动的 GitHub Bug 自动修复。安装后自动分析 Issue 并提交修复 PR。',
+    lbl_installs:'安装数', lbl_runs:'修复次数', lbl_prs:'已创建 PR', lbl_rate:'成功率',
+    cta_go:'安装到 GitHub →', cta_done:'✓ 已安装',
+    how:'工作原理',
+    s1:'在你的仓库安装 GitHub App', s2:'新 Bug Issue 被创建（或评论 /fix）',
+    s3:'AI 分析 Issue，定位 Bug', s4:'自动提交最小修复 PR',
+    pricing:'定价',
+    f1:'每月 5 个修复 PR', f2:'公开仓库', f3:'社区支持',
+    p1:'无限修复 PR', p2:'公开 + 私有仓库', p3:'优先处理', p4:'邮件支持',
+    recent:'最近活动', th_repo:'仓库', th_status:'状态', th_date:'日期',
+    loading:'加载中...', load_fail:'加载失败',
+    dash_installs:'你的安装', dash_history:'修复历史', dash_usage:'月度用量',
+    no_installs:'未找到安装。', install_link:'去安装 →',
+    no_runs:'暂无修复记录', no_usage:'暂无用量数据',
+    login:'GitHub 登录', logout:'退出',
+    th_issue:'Issue', th_pr:'PR', th_account:'账号', th_month:'月份', th_count:'PR 数'
+  },
+  en: {
+    nav_home:'Home', nav_dash:'Dashboard',
+    hero:'AI-powered bug fixer for GitHub. Install the app and we'll automatically analyze issues and submit fix PRs.',
+    lbl_installs:'Installations', lbl_runs:'Fix Attempts', lbl_prs:'PRs Created', lbl_rate:'Success Rate',
+    cta_go:'Install on GitHub →', cta_done:'✓ Installed',
+    how:'How it works',
+    s1:'Install the GitHub App on your repo', s2:'A new bug issue is opened (or comment /fix)',
+    s3:'AI analyzes the issue, locates the bug', s4:'A minimal fix PR is automatically submitted',
+    pricing:'Pricing',
+    f1:'5 fix PRs per month', f2:'Public repos', f3:'Community support',
+    p1:'Unlimited fix PRs', p2:'Public + private repos', p3:'Priority processing', p4:'Email support',
+    recent:'Recent Activity', th_repo:'Repo', th_status:'Status', th_date:'Date',
+    loading:'Loading...', load_fail:'Failed to load',
+    dash_installs:'Your Installations', dash_history:'Fix History', dash_usage:'Monthly Usage',
+    no_installs:'No installations found. ', install_link:'Install the app →',
+    no_runs:'No fix runs yet', no_usage:'No usage data yet',
+    login:'Sign in with GitHub', logout:'Logout',
+    th_issue:'Issue', th_pr:'PR', th_account:'Account', th_month:'Month', th_count:'PRs'
+  }
+};
+
+function t(k){ return (I18N[L]||I18N.en)[k] || (I18N.en)[k] || k; }
+
+function applyLang(){
+  document.getElementById('nav-home').textContent = t('nav_home');
+  document.getElementById('nav-dashboard').textContent = t('nav_dash');
+  document.getElementById('hero-desc').textContent = t('hero');
+  document.getElementById('lbl-installs').textContent = t('lbl_installs');
+  document.getElementById('lbl-runs').textContent = t('lbl_runs');
+  document.getElementById('lbl-prs').textContent = t('lbl_prs');
+  document.getElementById('lbl-rate').textContent = t('lbl_rate');
+  document.getElementById('how-title').textContent = t('how');
+  document.getElementById('step1').textContent = t('s1');
+  document.getElementById('step2').textContent = t('s2');
+  document.getElementById('step3').textContent = t('s3');
+  document.getElementById('step4').textContent = t('s4');
+  document.getElementById('pricing-title').textContent = t('pricing');
+  document.getElementById('free1').textContent = t('f1');
+  document.getElementById('free2').textContent = t('f2');
+  document.getElementById('free3').textContent = t('f3');
+  document.getElementById('pro1').textContent = t('p1');
+  document.getElementById('pro2').textContent = t('p2');
+  document.getElementById('pro3').textContent = t('p3');
+  document.getElementById('pro4').textContent = t('p4');
+  document.getElementById('recent-title').textContent = t('recent');
+  document.getElementById('th-repo').textContent = t('th_repo');
+  document.getElementById('th-status').textContent = t('th_status');
+  document.getElementById('th-date').textContent = t('th_date');
+  document.getElementById('loading').textContent = t('loading');
+  document.getElementById('dash-title-installs').textContent = t('dash_installs');
+  document.getElementById('dash-title-history').textContent = t('dash_history');
+  document.getElementById('dash-title-usage').textContent = t('dash_usage');
+  document.getElementById('dash-inst-loading').textContent = t('loading');
+  document.getElementById('dash-runs-loading').textContent = t('loading');
+  document.getElementById('dash-usage-loading').textContent = t('loading');
+  document.getElementById('lang-btn').textContent = L==='zh' ? 'EN' : '中文';
+  document.documentElement.lang = L;
+  updateCTA();
+  updateAuthUI(currentUser);
 }
 
-function updateAuthUI(user) {
-  const area = document.getElementById("auth-area");
-  const dashNav = document.getElementById("nav-dashboard");
-  if (user) {
-    dashNav.style.display = "";
-    area.innerHTML = '<span class="user-menu"><img src="'+user.avatar+'" class="avatar" alt="'+user.login+'"><span style="font-size:.9rem">'+user.login+'</span><button class="btn-danger" onclick="logout()">Logout</button></span>';
+function toggleLang(){
+  L = L==='zh' ? 'en' : 'zh';
+  localStorage.setItem('frost-lang', L);
+  applyLang();
+}
+
+function updateCTA(){
+  var el = document.getElementById('cta-area');
+  if(!el) return;
+  if(userInstalled){
+    el.innerHTML = '<span class="btn-installed">'+t('cta_done')+'</span>';
   } else {
-    dashNav.style.display = "none";
-    area.innerHTML = '<a href="/auth/login" class="btn btn-outline btn-sm">Sign in with GitHub</a>';
+    el.innerHTML = '<a href="https://github.com/apps/frost-autofix" target="_blank" class="btn btn-primary">'+t('cta_go')+'</a>';
   }
 }
 
-async function logout() {
-  await fetch("/auth/logout", { method: "POST" }).catch(()=>{});
-  currentUser = null;
-  updateAuthUI(null);
-  showPage("home");
+function showPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-links a').forEach(function(a){a.classList.remove('active')});
+  var pg = document.getElementById('page-'+name);
+  var nv = document.getElementById('nav-'+name);
+  if(pg) pg.classList.add('active');
+  if(nv) nv.classList.add('active');
+  if(name==='dashboard' && currentUser) loadDashboard();
+  if(name==='home') loadPublicStats();
 }
 
-function showPage(name) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".nav-links a").forEach(a => a.classList.remove("active"));
-  var pg = document.getElementById("page-"+name);
-  var nv = document.getElementById("nav-"+name);
-  if (pg) pg.classList.add("active");
-  if (nv) nv.classList.add("active");
-  if (name === "dashboard" && currentUser) loadDashboard();
-  if (name === "home") loadPublicStats();
+function updateAuthUI(user){
+  var area = document.getElementById('auth-area');
+  var dashNav = document.getElementById('nav-dashboard');
+  if(!area) return;
+  if(user){
+    dashNav.style.display = '';
+    area.innerHTML = '<span class="user-menu"><img src="'+user.avatar+'" class="avatar" alt="'+user.login+'"><span style="font-size:.9rem">'+user.login+'</span><button class="btn-danger" onclick="doLogout()">'+t('logout')+'</button></span>';
+  } else {
+    dashNav.style.display = 'none';
+    area.innerHTML = '<a href="/auth/login" class="btn btn-outline btn-sm">'+t('login')+'</a>';
+  }
 }
 
-async function loadPublicStats() {
+async function checkAuth(){
   try {
-    const d = await (await fetch("/api/stats")).json();
-    document.getElementById("s-installs").textContent = d.installations;
-    document.getElementById("s-runs").textContent = d.total_runs;
-    document.getElementById("s-prs").textContent = d.prs_created;
-    document.getElementById("s-rate").textContent = d.success_rate + "%";
-    const tbody = document.getElementById("activity-body");
-    tbody.innerHTML = "";
-    if (d.recent && d.recent.length) {
-      d.recent.forEach(function(r) {
-        var cls = r.status==="success"?"badge-success":r.status==="failed"?"badge-failed":r.status==="processing"?"badge-processing":"badge-queued";
-        var tr = document.createElement("tr");
-        tr.innerHTML = '<td><a href="https://github.com/'+r.repo+'">'+r.repo+'</a></td><td>#'+r.issue_number+'</td><td>'+(r.pr_number?'<a href="https://github.com/'+r.repo+'/pull/'+r.pr_number+'" style="color:var(--green)">#'+r.pr_number+'</a>':"—")+'</td><td><span class="badge '+cls+'">'+r.status+'</span></td><td>'+new Date(r.created_at).toLocaleDateString()+'</td>';
+    var res = await fetch('/api/me');
+    if(!res.ok){ updateAuthUI(null); return; }
+    currentUser = await res.json();
+    // Check installations to update CTA
+    try {
+      var ir = await fetch('/api/my/installations');
+      if(ir.ok){
+        var id = await ir.json();
+        if(id.installations && id.installations.length > 0) userInstalled = true;
+      }
+    } catch(e){}
+    updateAuthUI(currentUser);
+    updateCTA();
+    if(location.hash.includes('dashboard')) showPage('dashboard');
+  } catch(e){ updateAuthUI(null); }
+}
+
+async function doLogout(){
+  await fetch('/auth/logout',{method:'POST'}).catch(function(){});
+  currentUser = null; userInstalled = false;
+  updateAuthUI(null); updateCTA();
+  showPage('home');
+}
+
+async function loadPublicStats(){
+  try {
+    var d = await (await fetch('/api/stats')).json();
+    document.getElementById('s-installs').textContent = d.installations;
+    document.getElementById('s-runs').textContent = d.total_runs;
+    document.getElementById('s-prs').textContent = d.prs_created;
+    document.getElementById('s-rate').textContent = d.success_rate+'%';
+    var tbody = document.getElementById('activity-body');
+    tbody.innerHTML = '';
+    if(d.recent && d.recent.length){
+      d.recent.forEach(function(r){
+        var cls = r.status==='success'?'badge-success':r.status==='failed'?'badge-failed':r.status==='processing'?'badge-processing':'badge-queued';
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><a href="https://github.com/'+r.repo+'">'+r.repo+'</a></td><td>#'+r.issue_number+'</td><td>'+(r.pr_number?'<a href="https://github.com/'+r.repo+'/pull/'+r.pr_number+'" style="color:var(--green)">#'+r.pr_number+'</a>':'&mdash;')+'</td><td><span class="badge '+cls+'">'+r.status+'</span></td><td>'+new Date(r.created_at).toLocaleDateString()+'</td>';
         tbody.appendChild(tr);
       });
-      document.getElementById("activity").style.display = "";
+      document.getElementById('activity').style.display = '';
     }
-    document.getElementById("loading").style.display = "none";
-  } catch(e) { document.getElementById("loading").textContent = "Could not load stats"; }
+    document.getElementById('loading').style.display = 'none';
+  } catch(e){ document.getElementById('loading').textContent = t('load_fail'); }
 }
 
-async function loadDashboard() {
+async function loadDashboard(){
   try {
-    var data = await (await fetch("/api/my/installations")).json();
-    var el = document.getElementById("dash-installations");
-    if (!data.installations || !data.installations.length) {
-      el.innerHTML = '<div class="empty">No installations found. <a href="https://github.com/apps/frost-autofix" target="_blank">Install the app \\u2192</a></div>';
+    var data = await (await fetch('/api/my/installations')).json();
+    var el = document.getElementById('dash-installations');
+    if(!data.installations || !data.installations.length){
+      el.innerHTML = '<div class="empty">'+t('no_installs')+'<a href="https://github.com/apps/frost-autofix" target="_blank">'+t('install_link')+'</a></div>';
     } else {
-      el.innerHTML = data.installations.map(function(inst) {
-        var pct = inst.pr_limit > 0 ? Math.min(100, Math.round(inst.current_month_prs / inst.pr_limit * 100)) : 0;
-        var bc = pct >= 100 ? "full" : pct >= 80 ? "warn" : "ok";
-        return '<div class="install-card"><div class="install-header"><span class="account">'+inst.account_login+'</span><span class="plan-badge plan-'+inst.plan+'">'+inst.plan+'</span></div><div class="usage-text">'+inst.current_month_prs+' / '+(inst.pr_limit===-1?"\\u221E":inst.pr_limit)+' PRs this month</div>'+(inst.pr_limit>0?'<div class="usage-bar-wrap"><div class="usage-bar '+bc+'" style="width:'+pct+'%"></div></div>':"")+'</div>';
-      }).join("");
+      userInstalled = true; updateCTA();
+      el.innerHTML = data.installations.map(function(inst){
+        var pct = inst.pr_limit>0 ? Math.min(100,Math.round(inst.current_month_prs/inst.pr_limit*100)) : 0;
+        var bc = pct>=100?'full':pct>=80?'warn':'ok';
+        var limitStr = inst.pr_limit===-1 ? '∞' : inst.pr_limit;
+        return '<div class="install-card"><div class="install-header"><span class="account">'+inst.account_login+'</span><span class="plan-badge plan-'+inst.plan+'">'+inst.plan+'</span></div><div class="usage-text">'+inst.current_month_prs+' / '+limitStr+' PRs</div>'+(inst.pr_limit>0?'<div class="usage-bar-wrap"><div class="usage-bar '+bc+'" style="width:'+pct+'%"></div></div>':'')+'</div>';
+      }).join('');
     }
-  } catch(e) { document.getElementById("dash-installations").innerHTML = '<div class="empty">Failed to load</div>'; }
+  } catch(e){ document.getElementById('dash-installations').innerHTML = '<div class="empty">'+t('load_fail')+'</div>'; }
 
   try {
-    var data = await (await fetch("/api/my/runs")).json();
-    var el = document.getElementById("dash-runs");
-    if (!data.runs || !data.runs.length) {
-      el.innerHTML = '<div class="empty">No fix runs yet</div>';
+    var data = await (await fetch('/api/my/runs')).json();
+    var el = document.getElementById('dash-runs');
+    if(!data.runs || !data.runs.length){
+      el.innerHTML = '<div class="empty">'+t('no_runs')+'</div>';
     } else {
-      var h = '<table><thead><tr><th>Repo</th><th>Issue</th><th>PR</th><th>Status</th><th>Date</th></tr></thead><tbody>';
-      data.runs.forEach(function(r) {
-        var cls = r.status==="success"?"badge-success":r.status==="failed"?"badge-failed":r.status==="processing"?"badge-processing":"badge-queued";
-        h += '<tr><td><a href="https://github.com/'+r.repo+'">'+r.repo+'</a></td><td><a href="https://github.com/'+r.repo+'/issues/'+r.issue_number+'">#'+r.issue_number+'</a></td><td>'+(r.pr_number?'<a href="https://github.com/'+r.repo+'/pull/'+r.pr_number+'" style="color:var(--green)">#'+r.pr_number+'</a>':"—")+'</td><td><span class="badge '+cls+'">'+r.status+'</span></td><td>'+new Date(r.created_at).toLocaleDateString()+'</td></tr>';
+      var h = '<table><thead><tr><th>'+t('th_repo')+'</th><th>'+t('th_issue')+'</th><th>'+t('th_pr')+'</th><th>'+t('th_status')+'</th><th>'+t('th_date')+'</th></tr></thead><tbody>';
+      data.runs.forEach(function(r){
+        var cls = r.status==='success'?'badge-success':r.status==='failed'?'badge-failed':r.status==='processing'?'badge-processing':'badge-queued';
+        h += '<tr><td><a href="https://github.com/'+r.repo+'">'+r.repo+'</a></td><td><a href="https://github.com/'+r.repo+'/issues/'+r.issue_number+'">#'+r.issue_number+'</a></td><td>'+(r.pr_number?'<a href="https://github.com/'+r.repo+'/pull/'+r.pr_number+'" style="color:var(--green)">#'+r.pr_number+'</a>':'&mdash;')+'</td><td><span class="badge '+cls+'">'+r.status+'</span></td><td>'+new Date(r.created_at).toLocaleDateString()+'</td></tr>';
       });
       h += '</tbody></table>';
       el.innerHTML = h;
     }
-  } catch(e) { document.getElementById("dash-runs").innerHTML = '<div class="empty">Failed to load</div>'; }
+  } catch(e){ document.getElementById('dash-runs').innerHTML = '<div class="empty">'+t('load_fail')+'</div>'; }
 
   try {
-    var data = await (await fetch("/api/my/usage")).json();
-    var el = document.getElementById("dash-usage");
-    if (!data.usage || !data.usage.length) {
-      el.innerHTML = '<div class="empty">No usage data yet</div>';
+    var data = await (await fetch('/api/my/usage')).json();
+    var el = document.getElementById('dash-usage');
+    if(!data.usage || !data.usage.length){
+      el.innerHTML = '<div class="empty">'+t('no_usage')+'</div>';
     } else {
-      var h = '<table><thead><tr><th>Account</th><th>Month</th><th>PRs</th></tr></thead><tbody>';
-      data.usage.forEach(function(u) { h += '<tr><td>'+u.account_login+'</td><td>'+u.month+'</td><td>'+u.pr_count+'</td></tr>'; });
+      var h = '<table><thead><tr><th>'+t('th_account')+'</th><th>'+t('th_month')+'</th><th>'+t('th_count')+'</th></tr></thead><tbody>';
+      data.usage.forEach(function(u){ h += '<tr><td>'+u.account_login+'</td><td>'+u.month+'</td><td>'+u.pr_count+'</td></tr>'; });
       h += '</tbody></table>';
       el.innerHTML = h;
     }
-  } catch(e) { document.getElementById("dash-usage").innerHTML = '<div class="empty">Failed to load</div>'; }
+  } catch(e){ document.getElementById('dash-usage').innerHTML = '<div class="empty">'+t('load_fail')+'</div>'; }
 }
 
+applyLang();
 checkAuth();
 loadPublicStats();
 </script>
 </body>
 </html>`;
+
