@@ -179,11 +179,54 @@
 
   <script>
     const API = "https://frost-autofix.stawky.workers.dev";
+    const MOCK_MODE = new URLSearchParams(window.location.search).get("mock") === "1";
     let currentUser = null;
+
+    const MOCK_DATA = {
+      user: {
+        login: "demo-user",
+        avatar: "https://avatars.githubusercontent.com/u/583231?v=4",
+        user_id: 10001
+      },
+      stats: {
+        installations: 42,
+        total_runs: 368,
+        prs_created: 291,
+        success_rate: 79,
+        recent: [
+          { repo: "demo-org/api-service", issue_number: 123, pr_number: 456, status: "success", created_at: "2026-02-21T08:30:00Z" },
+          { repo: "demo-org/web-app", issue_number: 87, pr_number: null, status: "processing", created_at: "2026-02-22T10:45:00Z" },
+          { repo: "demo-org/infra", issue_number: 51, pr_number: null, status: "failed", created_at: "2026-02-23T12:00:00Z" }
+        ]
+      },
+      installations: [
+        { account_login: "demo-org", plan: "pro", current_month_prs: 18, pr_limit: -1 },
+        { account_login: "opensource-lab", plan: "free", current_month_prs: 4, pr_limit: 5 }
+      ],
+      runs: [
+        { repo: "demo-org/api-service", issue_number: 123, pr_number: 456, status: "success", created_at: "2026-02-21T08:30:00Z" },
+        { repo: "demo-org/web-app", issue_number: 87, pr_number: null, status: "processing", created_at: "2026-02-22T10:45:00Z" },
+        { repo: "demo-org/infra", issue_number: 51, pr_number: null, status: "failed", created_at: "2026-02-23T12:00:00Z" }
+      ],
+      usage: [
+        { account_login: "demo-org", month: "2026-02", pr_count: 18 },
+        { account_login: "opensource-lab", month: "2026-02", pr_count: 4 }
+      ]
+    };
 
     // ─── Auth ───
 
     async function checkAuth() {
+      if (MOCK_MODE) {
+        currentUser = MOCK_DATA.user;
+        updateAuthUI(currentUser);
+        if (!window.location.hash.includes("dashboard")) {
+          window.location.hash = "#dashboard";
+        }
+        showPage("dashboard");
+        return;
+      }
+
       try {
         // Try token from URL hash (for cross-domain cookie workaround)
         const hash = window.location.hash;
@@ -264,8 +307,7 @@
 
     async function loadPublicStats() {
       try {
-        const res = await fetch(`${API}/api/stats`);
-        const d = await res.json();
+        const d = MOCK_MODE ? MOCK_DATA.stats : await (await fetch(`${API}/api/stats`)).json();
         document.getElementById("s-installs").textContent = d.installations;
         document.getElementById("s-runs").textContent = d.total_runs;
         document.getElementById("s-prs").textContent = d.prs_created;
@@ -301,8 +343,7 @@
 
       // Load installations
       try {
-        const res = await fetch(`${API}/api/my/installations`, { headers });
-        const data = await res.json();
+        const data = MOCK_MODE ? { installations: MOCK_DATA.installations } : await (await fetch(`${API}/api/my/installations`, { headers })).json();
         const el = document.getElementById("dash-installations");
         if (!data.installations?.length) {
           el.innerHTML = `<div class="empty">No installations found. <a href="https://github.com/apps/frost-autofix" target="_blank">Install the app →</a></div>`;
@@ -329,8 +370,7 @@
 
       // Load runs
       try {
-        const res = await fetch(`${API}/api/my/runs`, { headers });
-        const data = await res.json();
+        const data = MOCK_MODE ? { runs: MOCK_DATA.runs } : await (await fetch(`${API}/api/my/runs`, { headers })).json();
         const el = document.getElementById("dash-runs");
         if (!data.runs?.length) {
           el.innerHTML = `<div class="empty">No fix runs yet</div>`;
@@ -355,8 +395,7 @@
 
       // Load usage history
       try {
-        const res = await fetch(`${API}/api/my/usage`, { headers });
-        const data = await res.json();
+        const data = MOCK_MODE ? { usage: MOCK_DATA.usage } : await (await fetch(`${API}/api/my/usage`, { headers })).json();
         const el = document.getElementById("dash-usage");
         if (!data.usage?.length) {
           el.innerHTML = `<div class="empty">No usage data yet</div>`;
