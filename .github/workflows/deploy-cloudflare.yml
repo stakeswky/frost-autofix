@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare
+name: Deploy Worker to Cloudflare
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: cloudflare-deploy-${{ github.ref }}
+  group: cloudflare-worker-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -30,38 +30,12 @@ jobs:
 
       - name: Validate worker config
         run: npx wrangler deploy --dry-run
-
-      - name: Deploy worker to Cloudflare
-        run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-  deploy-pages:
-    name: Deploy Pages (dashboard)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: deploy-worker
-    if: ${{ vars.CF_PAGES_PROJECT != '' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build dashboard
-        run: npm run build
-
-      - name: Deploy pages to Cloudflare
-        run: npx wrangler pages deploy dist --project-name "${{ vars.CF_PAGES_PROJECT }}"
+      - name: Deploy worker to Cloudflare
+        run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
