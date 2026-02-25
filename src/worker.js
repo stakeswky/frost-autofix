@@ -197,9 +197,11 @@ async function handleWebhook(request, env) {
   const event = request.headers.get("x-github-event");
   const payload = JSON.parse(body);
 
-  if (event === "installation" && (payload.action === "created" || payload.action === "deleted")) {
-    return handleInstallationEvent(payload, env);
-  }
+  // Installation lifecycle
+  if (event === "installation") return handleInstallationEvent(payload, env);
+  if (event === "installation_repositories") return handleInstallationRepos(payload, env);
+
+  // Fix triggers
   if (event === "issues" && payload.action === "opened") return handleIssueOpened(payload, env);
   if (event === "issue_comment" && payload.action === "created") {
     const cmd = payload.comment?.body?.trim().toLowerCase();
@@ -210,14 +212,31 @@ async function handleWebhook(request, env) {
 
 async function handleInstallationEvent(payload, env) {
   const inst = payload.installation;
-  if (payload.action === "created") {
+  const action = payload.action;
+
+  if (action === "created") {
     await env.DB.prepare(
       "INSERT OR IGNORE INTO installations (github_installation_id,account_login,account_type) VALUES(?,?,?)"
     ).bind(inst.id, inst.account.login, inst.account.type).run();
-  } else {
+    // Link sender to installation
+    if (payload.sender?.id) {
+      await env.DB.prepare("INSERT OR IGNORE INTO user_installations (github_user_id,installation_id) VALUES(?,?)").bind(payload.sender.id, inst.id).run();
+    }
+  } else if (action === "deleted") {
     await env.DB.prepare("DELETE FROM installations WHERE github_installation_id=?").bind(inst.id).run();
+    await env.DB.prepare("DELETE FROM user_installations WHERE installation_id=?").bind(inst.id).run();
+  } else if (action === "suspend") {
+    await env.DB.prepare("UPDATE installations SET plan='suspended',updated_at=datetime('now') WHERE github_installation_id=?").bind(inst.id).run();
+  } else if (action === "unsuspend") {
+    await env.DB.prepare("UPDATE installations SET plan='free',updated_at=datetime('now') WHERE github_installation_id=?").bind(inst.id).run();
   }
-  return json({ status: "ok" });
+  return json({ status: "ok", action });
+}
+
+async function handleInstallationRepos(payload, env) {
+  // When repos are added/removed from an installation — just acknowledge for now
+  // Could track per-repo config later
+  return json({ status: "ok", action: payload.action, repos_added: payload.repositories_added?.length || 0, repos_removed: payload.repositories_removed?.length || 0 });
 }
 
 async function handleIssueOpened(payload, env) {
@@ -238,7 +257,7 @@ async function handleIssueOpened(payload, env) {
 
   // Forward to backend
   try {
-    await fetch(env.BACKEND_URL || "https://autofix.14530529.xyz/enqueue", {
+    await fetch(env.BACKEND_URL || "https://autofix.14530529.xyz/autofix", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.BACKEND_TOKEN}` },
       body: JSON.stringify({ installation_id: installId, repo, issue_number: issue.number, issue_title: issue.title, issue_body: issue.body }),
@@ -256,7 +275,7 @@ async function handleFixCommand(payload, env) {
 
   await env.DB.prepare("INSERT INTO fix_runs (installation_id,repo,issue_number,status) VALUES(?,?,?,?)").bind(installId, repo, issue.number, "queued").run();
   try {
-    await fetch(env.BACKEND_URL || "https://autofix.14530529.xyz/enqueue", {
+    await fetch(env.BACKEND_URL || "https://autofix.14530529.xyz/autofix", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.BACKEND_TOKEN}` },
       body: JSON.stringify({ installation_id: installId, repo, issue_number: issue.number, issue_title: issue.title, issue_body: issue.body }),
