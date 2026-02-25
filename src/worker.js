@@ -14,8 +14,9 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
 
-    // Dashboard HTML
-    if (path === "/" && (request.method === "GET" || request.method === "HEAD")) {
+    // Dashboard HTML (support legacy and static-like paths)
+    const isDashboardPath = path === "/" || path === "/index.html" || path === "/dashboard" || path === "/dashboard/" || path === "/dashboard/index.html";
+    if (isDashboardPath && (request.method === "GET" || request.method === "HEAD")) {
       return new Response(request.method === "HEAD" ? null : DASHBOARD_HTML, { headers: { "Content-Type": "text/html;charset=UTF-8" } });
     }
 

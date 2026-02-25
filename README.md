@@ -37,6 +37,41 @@ You can also trigger a fix manually by commenting `/fix` on any issue.
 
 View live stats at [frost-autofix-dashboard.pages.dev](https://frost-autofix-dashboard.pages.dev)
 
+
+## GitHub 自动构建与 Cloudflare 自动部署
+
+已提供 GitHub Actions 工作流：`.github/workflows/deploy-cloudflare.yml`。
+
+当你向 `main` 分支 push 代码时，会自动执行：
+
+1. 安装依赖
+2. 校验 Worker 配置（`wrangler deploy --dry-run`）
+3. 部署 **Cloudflare Worker**
+
+> 当前项目前后端都在 Worker 中，工作流不再部署 Pages。
+
+### 你需要在 GitHub 仓库里配置
+
+进入：`Settings -> Secrets and variables -> Actions`
+
+#### Secrets
+- `CLOUDFLARE_API_TOKEN`：Cloudflare API Token（需要 Worker Scripts 编辑权限）
+- `CLOUDFLARE_ACCOUNT_ID`：Cloudflare 账户 ID
+
+### 建议的 Cloudflare Token 权限
+- `Account / Cloudflare Workers:Edit`
+- `Zone / Zone:Read`（部分场景需要）
+
+
+### 本地查看登录后的 Dashboard（Mock 数据）
+
+不需要真实 GitHub 登录，直接打开：
+
+- `/?mock=1#dashboard`（Worker 部署）
+- `dashboard/index.html?mock=1#dashboard`（本地静态文件预览）
+
+该模式会注入演示用户和示例安装/运行/用量数据，适合产品演示和截图。
+
 ## Track Record
 
 | Repository | Issue | PR | Status |
@@ -50,7 +85,7 @@ View live stats at [frost-autofix-dashboard.pages.dev](https://frost-autofix-das
 - **Webhook processing**: Cloudflare Worker (edge, <50ms response)
 - **Analysis & fix**: AI agent with full codebase access
 - **Usage tracking**: Cloudflare D1 (SQLite at the edge)
-- **Dashboard**: Cloudflare Pages
+- **Dashboard**: Cloudflare Worker (same app)
 
 ## Support
 
