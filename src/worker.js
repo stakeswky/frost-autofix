@@ -239,12 +239,25 @@ async function handleInstallationRepos(payload, env) {
   return json({ status: "ok", action: payload.action, repos_added: payload.repositories_added?.length || 0, repos_removed: payload.repositories_removed?.length || 0 });
 }
 
+// Auto-create installation record if missing (handles race conditions / missed webhooks)
+async function ensureInstallation(payload, env) {
+  const inst = payload.installation;
+  if (!inst?.id) return;
+  const login = inst.account?.login || payload.repository?.owner?.login || "unknown";
+  const type = inst.account?.type || "User";
+  await env.DB.prepare(
+    "INSERT OR IGNORE INTO installations (github_installation_id,account_login,account_type) VALUES(?,?,?)"
+  ).bind(inst.id, login, type).run();
+}
+
 async function handleIssueOpened(payload, env) {
   const issue = payload.issue;
   const repo = payload.repository.full_name;
   const installId = payload.installation?.id;
   if (!installId) return json({ status: "skipped", reason: "no_installation" });
   if (!looksLikeBug(issue.title, issue.body || "", issue.labels || [])) return json({ status: "skipped", reason: "not_bug" });
+
+  await ensureInstallation(payload, env);
 
   const month = new Date().toISOString().slice(0, 7);
   const install = await env.DB.prepare("SELECT * FROM installations WHERE github_installation_id=?").bind(installId).first();
@@ -272,6 +285,8 @@ async function handleFixCommand(payload, env) {
   const repo = payload.repository.full_name;
   const installId = payload.installation?.id;
   if (!installId) return json({ status: "skipped" });
+
+  await ensureInstallation(payload, env);
 
   await env.DB.prepare("INSERT INTO fix_runs (installation_id,repo,issue_number,status) VALUES(?,?,?,?)").bind(installId, repo, issue.number, "queued").run();
   try {

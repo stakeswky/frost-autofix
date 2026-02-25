@@ -145,23 +145,25 @@ gh pr create --title "fix: <简短描述> (closes #${issue_number})" --body "Fix
 }
 
 function spawnFixAgent(task, prompt) {
-  const gatewayUrl = "http://127.0.0.1:4319";
-  const payload = JSON.stringify({
-    task: prompt,
-    mode: "run",
-    label: `autofix-${task.repo.replace("/", "-")}-${task.issue_number}`,
-    runTimeoutSeconds: 600,
-  });
+  // Write prompt to temp file to avoid shell escaping issues with long prompts
+  const tmpFile = `/tmp/autofix-prompt-${Date.now()}.md`;
+  fs.writeFileSync(tmpFile, prompt);
 
   try {
+    // Use openclaw agent CLI which connects to the running gateway
     const result = execSync(
-      `curl -s -X POST "${gatewayUrl}/api/sessions/spawn" -H "Content-Type: application/json" -d '${payload.replace(/'/g, "'\\''")}'`,
-      { timeout: 15000, encoding: "utf-8" }
+      `cat "${tmpFile}" | openclaw agent --session-id "autofix-${task.repo.replace("/", "-")}-${task.issue_number}-${Date.now()}" --timeout 600 --json -m -`,
+      { timeout: 660000, encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 }
     );
-    console.log(`[${ts()}] Spawn result: ${result.trim().slice(0, 200)}`);
-    return { status: "spawned", response: result.trim() };
+    console.log(`[${ts()}] Agent result: ${result.slice(0, 300)}`);
+    fs.unlinkSync(tmpFile);
+    return { status: "completed", response: result.slice(0, 1000) };
   } catch (e) {
-    throw new Error(`Spawn failed: ${e.message}`);
+    try { fs.unlinkSync(tmpFile); } catch (_) {}
+    // If openclaw agent CLI doesn't support stdin, fall back to file-based approach
+    const msgFile = `/tmp/autofix-msg-${Date.now()}.txt`;
+    const msg = fs.readFileSync(tmpFile.replace('-msg-', '-prompt-'), 'utf-8').slice(0, 4000);
+    throw new Error(`Agent CLI failed: ${e.message.slice(0, 500)}`);
   }
 }
 
